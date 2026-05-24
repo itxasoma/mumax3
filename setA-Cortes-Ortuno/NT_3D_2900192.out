@@ -11,6 +11,7 @@
 //  we kindly ask you to cite the references in references.bib        //
 //********************************************************************//
 //output directory: setA.out/
+//starting GUI at http://127.0.0.1:35367
 Nx := 32
 Ny := 32
 Nz := 80
@@ -26,6 +27,8 @@ outer := Cylinder(2*R_out, L)
 inner := Cylinder(2*R_in, L)
 annulus := outer.Sub(inner)
 SetGeom(annulus)
+// Initializing geometry 0 %
+// Initializing geometry 100 %
 Msat = 860e3
 Aex = 13e-12
 Ku1 = 0.4e6
@@ -50,6 +53,8 @@ for iD := 0; iD < N_D; iD++ {
 		print("Done  iD=", iD, "  iH=", iH, "  Dind=", d_val, "  B_axial=", b_val)
 	}
 }
+// Calculating demag kernel 0 %
+// Calculating demag kernel 100 %
 //Done  iD= 0   iH= 0   Dind= 0   B_axial= 0
 //Done  iD= 0   iH= 1   Dind= 0   B_axial= 0.10807078728348889
 //Done  iD= 0   iH= 2   Dind= 0   B_axial= 0.21614157456697777

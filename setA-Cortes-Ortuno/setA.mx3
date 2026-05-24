@@ -1,16 +1,18 @@
 // ============================================================
 //  Set A — Cortés-Ortuño 2018 benchmark material
 //  Nanotube: hollow cylinder, axis = z, PBC along z
-//  Interfacial DMI (Cnv) × spatially-correct RADIAL external field
+//  Interfacial DMI (Cnv) × AXIAL external field (B along z)
 //
 //  Reference: Cortés-Ortuño et al., New J. Phys. 20, 113015 (2018)
 //    Ms=860kA/m    A=13pJ/m    Ku=0.4MJ/m^3    D=0→3mJ/m^2
 //    Lex~5.3nm ->  cell=2nm    LD~54.5nm ->    L=160nm
+//
+//  Companion: setA-Hrad.mx3 applies a radial field instead.
 // ============================================================
 
-Nx  := 32
-Ny  := 32
-Nz  := 80
+Nx    := 32
+Ny    := 32
+Nz    := 80
 a     := 2e-9
 R_out := 30e-9
 R_in  := 24e-9
@@ -31,38 +33,16 @@ Ku1   = 0.4e6
 AnisU = vector(0, 0, 1)
 alpha = 0.5
 
-// ── Radial field sectors ──────────────────────────────────────────────────────
-N_sectors := 16
-wedge_w   := 2 * R_out
-wedge_h   := 2 * R_out * sin(pi/(1.0*N_sectors)) * 1.4
-
-DefRegion(1,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*0.5/16.0)))
-DefRegion(2,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*1.5/16.0)))
-DefRegion(3,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*2.5/16.0)))
-DefRegion(4,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*3.5/16.0)))
-DefRegion(5,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*4.5/16.0)))
-DefRegion(6,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*5.5/16.0)))
-DefRegion(7,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*6.5/16.0)))
-DefRegion(8,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*7.5/16.0)))
-DefRegion(9,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*8.5/16.0)))
-DefRegion(10, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*9.5/16.0)))
-DefRegion(11, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*10.5/16.0)))
-DefRegion(12, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*11.5/16.0)))
-DefRegion(13, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*12.5/16.0)))
-DefRegion(14, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*13.5/16.0)))
-DefRegion(15, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*14.5/16.0)))
-DefRegion(16, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*15.5/16.0)))
-
-// ── Scan parameters ───────────────────────────────────────────────────────────
-N_D   := 11
-N_H   := 11
-D_max := 3.0e-3
-B_max := mu0 * 860e3
-
+// ── Output table columns ──────────────────────────────────────────────────────
 tableadd(Dind)
 tableadd(B_ext)
 
 // ── Phase diagram scan ────────────────────────────────────────────────────────
+N_D   := 11
+N_H   := 11
+D_max := 3.0e-3
+B_max := mu0 * 860e3   // ~1.08 T  (= mu0*Ms, saturation scale)
+
 for iD := 0; iD < N_D; iD++ {
     d_val := D_max * (1.0*iD) / (1.0*(N_D-1))
     Dind = d_val
@@ -70,22 +50,8 @@ for iD := 0; iD < N_D; iD++ {
     for iH := 0; iH < N_H; iH++ {
         b_val := B_max * (1.0*iH) / (1.0*(N_H-1))
 
-        B_ext.SetRegion(1,  vector(b_val*cos(2*pi*0.5/16.0),  b_val*sin(2*pi*0.5/16.0),  0))
-        B_ext.SetRegion(2,  vector(b_val*cos(2*pi*1.5/16.0),  b_val*sin(2*pi*1.5/16.0),  0))
-        B_ext.SetRegion(3,  vector(b_val*cos(2*pi*2.5/16.0),  b_val*sin(2*pi*2.5/16.0),  0))
-        B_ext.SetRegion(4,  vector(b_val*cos(2*pi*3.5/16.0),  b_val*sin(2*pi*3.5/16.0),  0))
-        B_ext.SetRegion(5,  vector(b_val*cos(2*pi*4.5/16.0),  b_val*sin(2*pi*4.5/16.0),  0))
-        B_ext.SetRegion(6,  vector(b_val*cos(2*pi*5.5/16.0),  b_val*sin(2*pi*5.5/16.0),  0))
-        B_ext.SetRegion(7,  vector(b_val*cos(2*pi*6.5/16.0),  b_val*sin(2*pi*6.5/16.0),  0))
-        B_ext.SetRegion(8,  vector(b_val*cos(2*pi*7.5/16.0),  b_val*sin(2*pi*7.5/16.0),  0))
-        B_ext.SetRegion(9,  vector(b_val*cos(2*pi*8.5/16.0),  b_val*sin(2*pi*8.5/16.0),  0))
-        B_ext.SetRegion(10, vector(b_val*cos(2*pi*9.5/16.0),  b_val*sin(2*pi*9.5/16.0),  0))
-        B_ext.SetRegion(11, vector(b_val*cos(2*pi*10.5/16.0), b_val*sin(2*pi*10.5/16.0), 0))
-        B_ext.SetRegion(12, vector(b_val*cos(2*pi*11.5/16.0), b_val*sin(2*pi*11.5/16.0), 0))
-        B_ext.SetRegion(13, vector(b_val*cos(2*pi*12.5/16.0), b_val*sin(2*pi*12.5/16.0), 0))
-        B_ext.SetRegion(14, vector(b_val*cos(2*pi*13.5/16.0), b_val*sin(2*pi*13.5/16.0), 0))
-        B_ext.SetRegion(15, vector(b_val*cos(2*pi*14.5/16.0), b_val*sin(2*pi*14.5/16.0), 0))
-        B_ext.SetRegion(16, vector(b_val*cos(2*pi*15.5/16.0), b_val*sin(2*pi*15.5/16.0), 0))
+        // Uniform axial field
+        B_ext = vector(0, 0, b_val)
 
         m = randomMag()
         relax()
@@ -93,8 +59,8 @@ for iD := 0; iD < N_D; iD++ {
         saveas(m, sprint("m_", iD, "_", iH))
         tablesave()
 
-        print("Done  iD=", iD, "  iH=", iH, "  Dind=", d_val, "  B_rad=", b_val)
+        print("Done  iD=", iD, "  iH=", iH, "  Dind=", d_val, "  B_axial=", b_val)
     }
 }
 
-print("=== Scan complete — output in setA-Cortes-Ortuno.out/ ===")
+print("=== Scan complete — output in setA.out/ ===")
