@@ -1,0 +1,59 @@
+// ============================================================
+//  Nanotube — 3D hollow cylinder on cuboid grid
+//  Single test point: D_dmi = 1 (max), H_radial = 1 (max)
+//  Perpendicular (Cnv) DMI + radial external field
+// ============================================================
+
+// ── Geometry parameters ───────────────────────────────────────────────────────
+R_out := 16e-9      // Outer radius (m)        — 16 nm
+R_in  := 11e-9      // Inner radius (m)         — 11 nm:  shell thickness = 5 nm
+L     := 160e-9     // Nanotube length (m)      — 160 nm along z
+a     := 2e-9       // Cell size (m)            — 2 nm
+
+Nx := 20
+Ny := 20
+Nz := 80
+
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+
+// ── Hollow cylinder geometry (axis along z) ───────────────────────────────────
+outer := Cylinder(2*R_out, L)
+inner := Cylinder(2*R_in,  L)
+tube  := outer.Sub(inner)
+SetGeom(tube)
+
+// ── Material parameters ───────────────────────────────────────────────────────
+Msat  = 800e3       // Saturation magnetization (A/m)
+Aex   = 13e-12      // Exchange stiffness (J/m)
+alpha = 0.5         // High damping for fast relaxation
+
+// ── DMI: perpendicular (Cnv symmetry) ─────────────────────────────────────────
+Dind  = 5e-3        // J/m²
+
+// ── Radial external field ─────────────────────────────────────────────────────
+// Msat is a regionwise scalar — cannot use in arithmetic directly.
+// Use the plain float value instead: mu0 * 800e3 ≈ 1.005 T
+B_rad := mu0 * 800e3   // T  (≈ 1 T, matches Msat value above)
+
+// Option 1 — Uniform field along x (radial approximation)
+B_ext = vector(B_rad, 0, 0)
+
+// Option 2 — True spatially-varying radial field (uncomment to use)
+// Bx_radial := B_rad * x / (sqrt(x*x + y*y + 1e-30))
+// By_radial := B_rad * y / (sqrt(x*x + y*y + 1e-30))
+// B_ext.SetFunction(Bx_radial, By_radial, 0)
+
+// ── Initial state & relaxation ────────────────────────────────────────────────
+m = randomMag()
+
+autosave(m, 200e-12)
+tableautosave(50e-12)
+
+relax()
+
+// ── Save final state ──────────────────────────────────────────────────────────
+save(m)
+saveas(m, "m_final")
+
+print("Done! Output in nanotube_3D.out/")

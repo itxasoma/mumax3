@@ -1,0 +1,5 @@
+/standard
+
+*.ovf
+
+.DS_Store

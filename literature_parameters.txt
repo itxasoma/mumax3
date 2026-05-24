@@ -1,0 +1,185 @@
+================================================================================
+  LITERATURE PARAMETERS EXTRACTED FROM PROVIDED PAPERS
+  Compiled for nanotube micromagnetic simulations
+================================================================================
+
+--------------------------------------------------------------------------------
+PAPER 1
+  Authors : Cortés-Ortuño et al.
+  Title   : Proposal for a micromagnetic standard problem for materials with
+            Dzyaloshinskii–Moriya interaction
+  Journal : New Journal of Physics 20, 113015 (2018)
+  DOI     : 10.1088/1367-2630/aaea1c
+--------------------------------------------------------------------------------
+
+  This paper uses an ARTIFICIAL (benchmark) material — not a real compound.
+  Purpose: validate DMI implementations in OOMMF, MuMax3, Fidimag.
+  DMI type tested: Cnv (interfacial/perpendicular), T (bulk), D2d (antiskyrmion)
+
+  PROBLEM 1 — 1D wire (edge tilting)
+    Geometry      : 100 nm × 1 nm × 1 nm wire
+    Cell size     : 1 nm × 1 nm × 1 nm
+    A (exchange)  : 13 pJ/m   = 13e-12 J/m
+    D (DMI)       : 3.0 mJ/m² = 3.0e-3 J/m²  [interfacial Cnv or bulk T]
+    Ms            : 0.86 MA/m  = 860e3 A/m
+    Ku (uniaxial) : 0.4 MJ/m³ = 0.4e6 J/m³
+    B_ext         : 0 T
+    Exchange length Lex = sqrt(2A / mu0*Ms²) ≈ 5.3 nm
+    Helical length LD = 4πA/D ≈ 54.5 nm
+
+  PROBLEM 2 — 2D disk (skyrmion)
+    Geometry      : disk, radius = 50 nm, thickness = 2 nm
+    Cell size     : 2 nm × 2 nm × 2 nm
+    A             : 13 pJ/m
+    D             : 3.0 mJ/m²
+    Ms            : 0.86 MA/m
+    Ku            : 0.4 MJ/m³
+    B_ext         : 0 T
+    Skyrmion radius (theory): 22.03 nm
+
+  PROBLEM 3 — 3D cylinder (FeGe, skyrmion modulation along thickness)
+    Material      : FeGe (B20 cubic helimagnet, bulk T-symmetry DMI)
+    Geometry      : cylinder, radius = 91.5 nm, thickness = 21 nm
+    Cell size     : 1 nm × 1 nm × 1 nm
+    A             : 8.78 pJ/m  = 8.78e-12 J/m
+    D             : 1.58 mJ/m² = 1.58e-3 J/m²
+    Ms            : 0.384 MA/m = 384e3 A/m
+    mu0*H_ext     : 0.4 T (along z)
+    Helical length LD = 4πA/D ≈ 69.83 nm
+
+  PROBLEM 4 — Spin wave dynamics (Damon–Eshbach modes)
+    Geometry      : stripe, 2000 nm × 200 nm × 1 nm
+    Cell size     : 2 nm × 2 nm × 1 nm
+    A             : 13 pJ/m
+    D             : 3.0 mJ/m²  [interfacial Cnv]
+    Ms            : 0.86 MA/m
+    H_ext         : (0, 0.4, 0) T
+    alpha damping : 0.01
+    Excitation    : sinc field, f0=60 GHz, t0=50 ps
+    Duration      : 4 ns, dt=1 ps
+
+--------------------------------------------------------------------------------
+PAPER 2
+  Authors : Mulkers, Milošević, Van Waeyenberge
+  Title   : Cycloidal versus skyrmionic states in mesoscopic chiral magnets
+  Journal : Physical Review B 93, 214405 (2016)
+  DOI     : 10.1103/PhysRevB.93.214405
+--------------------------------------------------------------------------------
+
+  Material      : Pt/Co thin film (interfacial Cnv DMI)
+  Geometry      : thin strips and square platelets (2D, PMA)
+  Thickness     : t = 0.4 nm (single atomic layer approximation)
+  Cell size     : 1 nm × 1 nm × 0.4 nm
+
+  Material parameters (Pt/Co):
+    Msat          : 580 kA/m  = 580e3 A/m
+    A (exchange)  : 15 pJ/m   = 15e-12 J/m
+    K (anisotropy): 0.8 MJ/m³ = 0.8e6 J/m³
+    Keff          : K - (1/2)*mu0*Msat² ≈ 0.59 MJ/m³
+    D (DMI)       : 3–5 mJ/m² (scanned in paper)
+    Dc (critical) : 4*sqrt(A*Keff) ≈ 4.0 mJ/m²  [boundary uniform↔cycloid]
+    B_ext         : 0 T (ground state study)
+
+  Geometry ranges studied:
+    Strips  : width w = 20–200 nm, infinite length (periodic BC along y)
+    Platelets: side length l = 20–200 nm (square)
+
+  Key results:
+    - For D < Dc: ground state is quasi-uniform (ferromagnetic)
+    - For D > Dc: ground state is cycloidal; larger w → more domain walls
+    - Skyrmions appear as excited states or near D ≈ Dc in circular geometry
+
+--------------------------------------------------------------------------------
+PAPER 3
+  Authors : Niitsu, Liu, Booth, Yu, Mathur, Stolt, Shindo, Jin, Zang,
+            Nagaosa, Tokura
+  Title   : Geometrically stabilized skyrmionic vortex in FeGe tetrahedral
+            nanoparticles
+  Journal : Nature Materials 21, 305–310 (2022)
+  DOI     : 10.1038/s41563-021-01186-x
+--------------------------------------------------------------------------------
+
+  Material      : B20-type FeGe (bulk cubic helimagnet, T-symmetry DMI)
+  TC            : ~280 K
+  Observation   : 10 K (electron holography) and RT (above TC for structure)
+
+  Geometry (nanoparticles):
+    Shape         : tetrahedra with (111) facets
+    Size range    : 100–600 nm (edge length)
+    Key sizes     : 110 nm, 145 nm, 185 nm, 255 nm, 300 nm
+    Cell size used in simulations: 3 nm × 3 nm × 3 nm
+
+  Material parameters used in MuMax3 simulations:
+    Ms            : 384 kA/m  = 384e3 A/m
+    A (exchange)  : 4.75 pJ/m = 4.75e-12 J/m
+    D (DMI, bulk) : 0.8527 mJ/m² = 0.8527e-3 J/m²  [bulk T-type, Dbulk]
+    Kc1 (cubic)   : -6 kJ/m³  = -6e3 J/m³
+    Kc2 (cubic)   : +12 kJ/m³ = +12e3 J/m³
+    Surface Ks    : 95 J/m²  (easy-plane, for 145 nm particle only)
+    B_ext         : 0 T (zero-field ground state study)
+    Helical wavelength: ~70 nm (bulk FeGe literature value)
+
+  Phase diagram (from simulations + EH experiment):
+    < 130 nm      : single skyrmionic vortex (ground state, robust up to TC)
+    ~130–200 nm   : 1–3 skyrmionic vortices
+    ~200–300 nm   : helical state with q along [100]
+    > 300 nm      : helical state with q along [111]
+
+================================================================================
+  RECOMMENDED PARAMETERS FOR NANOTUBE SIMULATIONS
+================================================================================
+
+  Based on the three papers above, here are three physically grounded
+  parameter sets for your 3D hollow cylinder (nanotube) MuMax3 simulations.
+  All use perpendicular (Cnv / interfacial) DMI as in your MC model.
+
+  ── SET A: Benchmark material (Cortés-Ortuño 2018) ───────────────────────────
+  Well-validated against analytical solutions. Good for method testing.
+    Msat  = 860e3    A/m
+    Aex   = 13e-12   J/m
+    Dind  = 0 → 3.0e-3 J/m²  (scan: 0 to 3 mJ/m²)
+    Ku    = 0.4e6    J/m³
+    alpha = 0.5      (relaxation; use 0.01 for dynamics)
+    B_ext = 0 → 1.08 T  (mu0*Msat scan; 1.08 T = mu0*860e3)
+    Exchange length : ~5.3 nm → use cell size ≤ 2.5 nm
+    Helical length  : ~54.5 nm (at D=3 mJ/m²)
+
+  ── SET B: Pt/Co ultrathin film (Mulkers 2016) ───────────────────────────────
+  Realistic interfacial system with strong PMA. Closest to thin-wall NT.
+    Msat  = 580e3    A/m
+    Aex   = 15e-12   J/m
+    Dind  = 0 → 5.0e-3 J/m²  (scan; Dc ≈ 4.0 mJ/m²)
+    Ku    = 0.8e6    J/m³  (PMA)
+    alpha = 0.5
+    B_ext = 0 → 0.73 T  (mu0*Msat scan)
+    Exchange length : ~5.9 nm → cell size ≤ 2.5 nm
+    Note: shell thickness should be ≥ 3×cell ≈ 7.5 nm
+
+  ── SET C: FeGe nanoparticle (Niitsu/Nature Materials 2022) ──────────────────
+  Real material; helical length 70 nm → interesting for NT with R~35 nm.
+  NOTE: FeGe uses bulk T-type DMI (Dbulk in MuMax3), not interfacial Cnv.
+    Msat  = 384e3    A/m
+    Aex   = 4.75e-12 J/m
+    Dbulk = 0.8527e-3 J/m²  [use Dbulk in MuMax3, not Dind]
+    Kc1   = -6e3     J/m³
+    alpha = 0.5
+    B_ext = 0 → 0.48 T  (mu0*Msat)
+    Exchange length : ~7.2 nm → cell size ≤ 3 nm
+    Helical length  : ~70 nm → NT radius should be ~35–70 nm
+
+  ── NANOTUBE GEOMETRY RECOMMENDATION ─────────────────────────────────────────
+  Based on the papers: use sizes comparable to the helical length LD.
+
+    For Set A (LD ≈ 55 nm):
+      R_out = 30 nm, R_in = 25 nm, L = 160 nm
+      cell  = 2 nm, Grid ~ 30×30×80
+
+    For Set B (LD ≈ 24 nm for D=3.8 mJ/m²):
+      R_out = 20 nm, R_in = 16 nm, L = 100 nm
+      cell  = 2 nm, Grid ~ 22×22×50
+
+    For Set C (LD ≈ 70 nm):
+      R_out = 50 nm, R_in = 44 nm, L = 200 nm
+      cell  = 3 nm, Grid ~ 36×36×68
+
+================================================================================

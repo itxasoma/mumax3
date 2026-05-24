@@ -1,0 +1,46 @@
+//mumax 3.12 [linux_amd64 go1.22.4(gc) CUDA-12.6]
+//commit hash: 6e5c98bb
+//CPU info: AMD EPYC 9334 32-Core Processor, Cores: 32, MHz: 2700.000
+//GPU info: NVIDIA H100 PCIe(81109MB), CUDA Driver 12.6, cc=9.0, using cc=90 PTX
+//OS  info: Red Hat Enterprise Linux 8.9 (Ootpa), Hostname: gpu16
+//Timestamp: 2026-05-17 21:35:55
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: nanotube_3D.out/
+R_out := 16e-9
+R_in := 11e-9
+L := 160e-9
+a := 2e-9
+Nx := 20
+Ny := 20
+Nz := 80
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+outer := Cylinder(2*R_out, L)
+inner := Cylinder(2*R_in, L)
+tube := outer.Sub(inner)
+SetGeom(tube)
+Msat = 800e3
+Aex = 13e-12
+alpha = 0.5
+Dind = 5e-3
+B_rad := mu0 * 800e3
+B_ext = vector(B_rad, 0, 0)
+m = randomMag()
+autosave(m, 200e-12)
+tableautosave(50e-12)
+relax()
+save(m)
+saveas(m, "m_final")
+print("Done! Output in nanotube_3D.out/")
+//Done! Output in nanotube_3D.out/
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
+//   * Mulkers et al., Phys. Rev. B 95, 144401 (2017).
