@@ -22,7 +22,7 @@ L     := 160e-9
 
 SetGridsize(Nx, Ny, Nz)
 SetCellsize(a, a, a)
-SetPBC(0, 0, 4)
+// SetPBC(0, 0, 4)
 
 outer   := Cylinder(2*R_out, L)
 inner   := Cylinder(2*R_in, L)

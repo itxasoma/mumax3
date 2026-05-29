@@ -1,0 +1,44 @@
+//mumax 3.12 [linux_amd64 go1.22.4(gc) CUDA-12.6]
+//commit hash: 6e5c98bb
+//CPU info: AMD EPYC 9334 32-Core Processor, Cores: 32, MHz: 2700.000
+//GPU info: NVIDIA H100 PCIe(81109MB), CUDA Driver 12.6, cc=9.0, using cc=90 PTX
+//OS  info: Red Hat Enterprise Linux 8.9 (Ootpa), Hostname: gpu17
+//Timestamp: 2026-05-29 11:02:13
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: setA-Hrad-2.out/
+//starting GUI at http://127.0.0.1:35367
+a := 1e-9
+Nx := 96
+Ny := 96
+Nz := 96
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+EdgeSmooth = 8
+R_out := 40e-9
+R_in := 32e-9
+SetGeom(Cylinder(2*R_out, Nz*a).Sub(Cylinder(2*R_in, Nz*a)))
+// Initializing geometry 0 %
+// Initializing geometry 100 %
+Msat = 0.384e6
+Aex = 8.78e-12
+alpha = 0.5
+Dbulk = 0.0
+B_ext = vector(0, 0, 0)
+randomMag()
+autosave(m, 100e-12)
+tableAdd(Dbulk)
+tableAutoSave(10e-12)
+relax()
+// Calculating demag kernel 0 %
+// Calculating demag kernel 100 %
+save(m)
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
