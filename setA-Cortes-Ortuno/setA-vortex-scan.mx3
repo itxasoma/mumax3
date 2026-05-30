@@ -1,0 +1,107 @@
+// ============================================================
+//  setA-vortex-scan.mx3
+//  FeGe bulk-DMI parameters — Table 3, Cortés-Ortuño 2018
+//  Geometry: R_int=32nm, R_out=40nm, Lz=96nm, a=1nm
+//  LONG tube (aspect ratio 1.2) → vortex state at D=0, H=0
+//  No PBC — finite-size effects in z visible
+//
+//  Phase diagram scan: D in [0, D_max], B_rad in [0, B_max]
+//  D_max = 1.58 mJ/m^2  (FeGe, Table 3)
+//  B_max = mu0 * Ms     (~0.482 T)
+//  Radial field: 16-sector approximation of B_r(x,y) = B_rad * r_hat
+// ============================================================
+
+// --- Cell size & grid ---
+a     := 1e-9
+R_out := 40e-9
+R_in  := 32e-9
+Nx    := 96       // 80 nm tube + padding, rounded to multiple of 8
+Ny    := 96
+Nz    := 96       // 96 nm tube length → vortex ground state
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+
+EdgeSmooth = 8
+
+// --- Geometry: hollow cylinder, no PBC ---
+outer   := Cylinder(2*R_out, Nz*a)
+inner   := Cylinder(2*R_in,  Nz*a)
+annulus := outer.Sub(inner)
+SetGeom(annulus)
+// No SetPBC — finite size in all directions
+
+// --- FeGe material parameters (Table 3, Cortés-Ortuño 2018) ---
+Msat  = 0.384e6   // 0.384 MA/m
+Aex   = 8.78e-12  // 8.78 pJ/m
+alpha = 0.5       // damping for fast relaxation
+// No uniaxial anisotropy (FeGe bulk, cubic K neglected)
+
+// --- Radial field: 16-sector approximation ---
+N_sectors := 16
+wedge_w   := 2 * R_out
+wedge_h   := 2 * R_out * sin(pi/(1.0*N_sectors)) * 1.4
+
+DefRegion(1,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*0.5/16.0)))
+DefRegion(2,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*1.5/16.0)))
+DefRegion(3,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*2.5/16.0)))
+DefRegion(4,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*3.5/16.0)))
+DefRegion(5,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*4.5/16.0)))
+DefRegion(6,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*5.5/16.0)))
+DefRegion(7,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*6.5/16.0)))
+DefRegion(8,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*7.5/16.0)))
+DefRegion(9,  annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*8.5/16.0)))
+DefRegion(10, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*9.5/16.0)))
+DefRegion(11, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*10.5/16.0)))
+DefRegion(12, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*11.5/16.0)))
+DefRegion(13, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*12.5/16.0)))
+DefRegion(14, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*13.5/16.0)))
+DefRegion(15, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*14.5/16.0)))
+DefRegion(16, annulus.Intersect(Rect(wedge_w, wedge_h).RotZ(2*pi*15.5/16.0)))
+
+// --- Output table columns ---
+tableAdd(Dbulk)
+tableAdd(B_ext)
+
+// --- Scan parameters ---
+N_D   := 11
+N_H   := 11
+D_max := 1.58e-3          // J/m^2 — FeGe bulk DMI (Table 3)
+B_max := mu0 * 0.384e6    // ~0.482 T  (= mu0*Ms)
+
+// --- Phase diagram scan: D × B_rad ---
+for iD := 0; iD < N_D; iD++ {
+    d_val := D_max * (1.0*iD) / (1.0*(N_D-1))
+    Dbulk = d_val
+
+    for iH := 0; iH < N_H; iH++ {
+        b_val := B_max * (1.0*iH) / (1.0*(N_H-1))
+
+        // Apply radial field sector by sector
+        B_ext.SetRegion(1,  vector(b_val*cos(2*pi*0.5/16.0),  b_val*sin(2*pi*0.5/16.0),  0))
+        B_ext.SetRegion(2,  vector(b_val*cos(2*pi*1.5/16.0),  b_val*sin(2*pi*1.5/16.0),  0))
+        B_ext.SetRegion(3,  vector(b_val*cos(2*pi*2.5/16.0),  b_val*sin(2*pi*2.5/16.0),  0))
+        B_ext.SetRegion(4,  vector(b_val*cos(2*pi*3.5/16.0),  b_val*sin(2*pi*3.5/16.0),  0))
+        B_ext.SetRegion(5,  vector(b_val*cos(2*pi*4.5/16.0),  b_val*sin(2*pi*4.5/16.0),  0))
+        B_ext.SetRegion(6,  vector(b_val*cos(2*pi*5.5/16.0),  b_val*sin(2*pi*5.5/16.0),  0))
+        B_ext.SetRegion(7,  vector(b_val*cos(2*pi*6.5/16.0),  b_val*sin(2*pi*6.5/16.0),  0))
+        B_ext.SetRegion(8,  vector(b_val*cos(2*pi*7.5/16.0),  b_val*sin(2*pi*7.5/16.0),  0))
+        B_ext.SetRegion(9,  vector(b_val*cos(2*pi*8.5/16.0),  b_val*sin(2*pi*8.5/16.0),  0))
+        B_ext.SetRegion(10, vector(b_val*cos(2*pi*9.5/16.0),  b_val*sin(2*pi*9.5/16.0),  0))
+        B_ext.SetRegion(11, vector(b_val*cos(2*pi*10.5/16.0), b_val*sin(2*pi*10.5/16.0), 0))
+        B_ext.SetRegion(12, vector(b_val*cos(2*pi*11.5/16.0), b_val*sin(2*pi*11.5/16.0), 0))
+        B_ext.SetRegion(13, vector(b_val*cos(2*pi*12.5/16.0), b_val*sin(2*pi*12.5/16.0), 0))
+        B_ext.SetRegion(14, vector(b_val*cos(2*pi*13.5/16.0), b_val*sin(2*pi*13.5/16.0), 0))
+        B_ext.SetRegion(15, vector(b_val*cos(2*pi*14.5/16.0), b_val*sin(2*pi*14.5/16.0), 0))
+        B_ext.SetRegion(16, vector(b_val*cos(2*pi*15.5/16.0), b_val*sin(2*pi*15.5/16.0), 0))
+
+        m = randomMag()
+        relax()
+
+        saveas(m, sprint("m_", iD, "_", iH))
+        tablesave()
+
+        print("Done  iD=", iD, "  iH=", iH, "  Dbulk=", d_val, "  B_rad=", b_val)
+    }
+}
+
+print("=== Scan complete — output in setA-vortex-scan.out/ ===")
