@@ -1,0 +1,86 @@
+// ============================================================
+//  setA-KLHscan-cubic.mx3
+//  FeGe nanotube: scan over tube length Lz x external field Hz
+//  Cubic anisotropy fixed at FeGe bulk values (Niitsu et al. 2022)
+//
+//  Geometry (fixed in x,y):
+//    a     = 1 nm
+//    R_in  = 32 nm
+//    R_out = 40 nm
+//    EdgeSmooth = 8
+//
+//  Length scan:
+//    Lz = 16, 32, 48, 64, 80, 96, 112, 128 nm  (8 values)
+//
+//  Field scan (z-axis):
+//    Hz = 0, 0.2, 0.4 T  (3 values)
+//    0.4 T upper bound from Cortés-Ortuño 2018 benchmark
+//
+//  Cubic anisotropy fixed:
+//    Kc1 = -6  kJ/m^3  (Niitsu 2022, easy-plane first order)
+//    Kc2 = +12 kJ/m^3  (Niitsu 2022, second order)
+//
+//  Total: 8 × 3 = 24 relaxations
+// ============================================================
+
+a     := 1e-9
+R_out := 40e-9
+R_in  := 32e-9
+
+Nx := 96
+Ny := 96
+Nz := 128
+
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+
+EdgeSmooth = 8
+
+Msat  = 0.384e6
+Aex   = 8.78e-12
+alpha = 0.5
+
+Dbulk = 0.0
+
+// Cubic anisotropy fixed at FeGe bulk values (Niitsu et al. 2022)
+Kc1 = -6e3    // -6  kJ/m^3  easy-plane, first order
+Kc2 = 12e3    // +12 kJ/m^3  second order
+
+tableAdd(Kc1)
+tableAdd(Kc2)
+
+N_H := 3
+N_L := 8
+
+for iH := 0; iH < N_H; iH++ {
+
+    // Field values: 0, 0.2, 0.4 T along z
+    h_val := 0.0
+    if iH == 0 { h_val = 0.0 }
+    if iH == 1 { h_val = 0.2 }
+    if iH == 2 { h_val = 0.4 }
+
+    B_ext = vector(0, 0, h_val)
+
+    for iL := 0; iL < N_L; iL++ {
+
+        Lz_nm := 16 * (iL + 1)
+        Lz    := 1e-9 * Lz_nm
+
+        // Rebuild geometry for this length
+        outer   := Cylinder(2*R_out, Lz)
+        inner   := Cylinder(2*R_in,  Lz)
+        annulus := outer.Sub(inner)
+        SetGeom(annulus)
+
+        m = randomMag()
+        relax()
+
+        saveas(m, sprint("m_H", iH, "_Lz", Lz_nm, "nm"))
+        tablesave()
+
+        print("Done  iH=", iH, "  Hz=", h_val, " T  Lz=", Lz_nm, " nm")
+    }
+}
+
+print("=== LH cubic scan complete — output in setA-LHscan-cubic.out/ ===")

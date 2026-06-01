@@ -1,0 +1,67 @@
+// ============================================================
+//  setA-KLscan-uniaxial.mx3
+//  FeGe nanotube: joint scan over Lz and Ku (uniaxial, easy axis z)
+//  No DMI, no external field
+//
+//  Lengths : Lz = 16, 32, 48, 64, 80, 96, 112, 128 nm  (8 values)
+//  Ku values: 0, 100, 200 kJ/m^3  (3 values)
+//  Total: 24 relaxations
+// ============================================================
+
+a     := 1e-9
+R_out := 40e-9
+R_in  := 32e-9
+
+Nx := 96
+Ny := 96
+Nz := 128
+
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)   
+
+EdgeSmooth = 8
+
+Msat  = 0.384e6
+Aex   = 8.78e-12
+alpha = 0.5
+
+Dbulk = 0.0
+B_ext = vector(0, 0, 0)
+
+AnisU = vector(0, 0, 1)
+
+tableAdd(Ku1)
+
+N_L := 8
+N_K := 3
+
+for iK := 0; iK < N_K; iK++ {
+
+    k_val := 0.0
+    if iK == 0 { k_val = 0.0   }
+    if iK == 1 { k_val = 100e3 }
+    if iK == 2 { k_val = 200e3 }
+
+    Ku1 = k_val
+
+    for iL := 0; iL < N_L; iL++ {
+
+        Lz_nm := 16 * (iL + 1)
+        Lz    := 1e-9 * Lz_nm   
+
+        outer   := Cylinder(2*R_out, Lz)
+        inner   := Cylinder(2*R_in,  Lz)
+        annulus := outer.Sub(inner)
+        SetGeom(annulus)
+
+        m = randomMag()
+        relax()
+
+        saveas(m, sprint("m_Ku", iK, "_Lz", Lz_nm, "nm"))
+        tablesave()
+
+        print("Done  iK=", iK, "  Ku=", k_val/1e3, " kJ/m^3  Lz=", Lz_nm, " nm")
+    }
+}
+
+print("=== KLscan uniaxial complete ===")
