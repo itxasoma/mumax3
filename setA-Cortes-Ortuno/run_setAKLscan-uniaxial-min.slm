@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --job-name=NT_KLscan_uniaxial_min
+#SBATCH --output=NT_KLscan_uniaxial_min_%j.out
+#SBATCH --error=NT_KLscan_uniaxial_min_%j.err
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --ntasks=1
+#SBATCH --time=04:00:00
+
+module load mumax/3.12
+
+mumax3 setA-KLscan-uniaxial-min.mx3
