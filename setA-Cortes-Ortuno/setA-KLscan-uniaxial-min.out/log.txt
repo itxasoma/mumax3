@@ -1,0 +1,88 @@
+//mumax 3.12 [linux_amd64 go1.22.4(gc) CUDA-12.6]
+//commit hash: 6e5c98bb
+//CPU info: AMD EPYC 9334 32-Core Processor, Cores: 32, MHz: 2700.000
+//GPU info: NVIDIA H100 PCIe(81109MB), CUDA Driver 12.6, cc=9.0, using cc=90 PTX
+//OS  info: Red Hat Enterprise Linux 8.9 (Ootpa), Hostname: gpu23
+//Timestamp: 2026-06-19 13:41:05
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: setA-KLscan-uniaxial-min.out/
+a := 1e-9
+R_out := 40e-9
+R_in := 32e-9
+Nx := 96
+Ny := 96
+Nz := 128
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+EdgeSmooth = 8
+Msat = 0.384e6
+Aex = 8.78e-12
+Dbulk = 0.0
+B_ext = vector(0, 0, 0)
+AnisU = vector(0, 0, 1)
+tableAdd(Ku1)
+N_L := 8
+N_K := 3
+for iK := 0; iK < N_K; iK++ {
+	k_val := 0.0
+	if iK == 0 {
+		k_val = 0.0
+	}
+	if iK == 1 {
+		k_val = 100e3
+	}
+	if iK == 2 {
+		k_val = 200e3
+	}
+	Ku1 = k_val
+	for iL := 0; iL < N_L; iL++ {
+		Lz_nm := 16 * (iL + 1)
+		Lz := 1e-9 * Lz_nm
+		outer := Cylinder(2*R_out, Lz)
+		inner := Cylinder(2*R_in, Lz)
+		annulus := outer.Sub(inner)
+		SetGeom(annulus)
+		m = randomMag()
+		minimize()
+		saveas(m, sprint("m_Ku", iK, "_Lz", Lz_nm, "nm"))
+		tablesave()
+		print("Done  iK=", iK, "  Ku=", k_val/1e3, " kJ/m^3  Lz=", Lz_nm, " nm")
+	}
+}
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 16  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 32  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 48  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 64  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 80  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 96  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 112  nm
+//Done  iK= 0   Ku= 0  kJ/m^3  Lz= 128  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 16  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 32  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 48  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 64  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 80  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 96  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 112  nm
+//Done  iK= 1   Ku= 100  kJ/m^3  Lz= 128  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 16  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 32  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 48  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 64  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 80  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 96  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 112  nm
+//Done  iK= 2   Ku= 200  kJ/m^3  Lz= 128  nm
+print("=== KLscan uniaxial complete ===")
+//=== KLscan uniaxial complete ===
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
+//   * Exl et al., J. Appl. Phys. 115, 17D118 (2014).
