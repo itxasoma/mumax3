@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --job-name=NT_comparison
+#SBATCH --output=NT_comparison_%j.out
+#SBATCH --error=NT_comparison_%j.err
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --ntasks=1
+#SBATCH --time=02:00:00
+
+module load mumax/3.12
+
+mumax3 comparison.mx3

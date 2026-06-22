@@ -1,0 +1,83 @@
+// ============================================================
+//  initial-seed.mx3
+//  Snapshot de l'estat inicial de la seed (Gálvez Section 2)
+//  Cas: D = 3.0 mJ/m^2  (D7),  Lz = 16 nm
+//  Geometria setB-mix: R_out=40nm, R_in=32nm, cel·la 1nm
+//  NO fa relax ni minimize — només construeix la seed i guarda
+// ============================================================
+
+a     := 1e-9
+R_out := 40e-9
+R_in  := 32e-9
+
+Nx := 96
+Ny := 96
+Nz := 128
+
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+
+EdgeSmooth = 8
+
+Msat   = 0.384e6
+Aex    = 8.78e-12
+alpha  = 0.5
+Dbulk  = 3.0e-3       // D7 = 3.0 mJ/m^2
+Ku1    = 110e3         // Ku fixat setB-Galvez
+AnisU  = vector(0, 0, 1)
+B_ext  = vector(0, 0, 0)
+
+// ── Geometria: nanotub de Lz = 16 nm ─────────────────────────────────
+Lz    := 16e-9
+outer   := Cylinder(2*R_out, Lz)
+inner   := Cylinder(2*R_in,  Lz)
+annulus := outer.Sub(inner)
+SetGeom(annulus)
+
+// ── Estat de fons: tot +z ─────────────────────────────────────────────
+m = uniform(0, 0, 1)
+
+// ── Seed box (Gálvez Fig.1b): centre a (R_out/sqrt2, R_out/sqrt2, 0) ─
+seed_x := R_out / sqrt(2)   // ~ 28.28 nm
+seed_y := R_out / sqrt(2)
+
+box_hx := 10e-9             // semi-amplada X: 10 nm  → caixa 20 nm
+box_hy := 10e-9             // semi-amplada Y: 10 nm
+box_hz := 7.5e-9            // semi-alçada  Z: 7.5 nm → caixa 15 nm (cap a Lz/2)
+
+// Caixa central: magnetitzada en -z
+seed_box := Rect(2*box_hx, 2*box_hy).transl(seed_x, seed_y, 0)
+seed_slab := seed_box.Intersect(Slab(0, 0, 2*box_hz))
+defRegion(1, seed_slab)
+m.setRegion(1, uniform(0, 0, -1))
+
+// Tapa superior de la caixa: magnetitzada en +y
+top_slab := seed_box.Intersect(Slab(0, 0, 2*box_hz).transl(0, 0, box_hz))
+defRegion(2, top_slab)
+m.setRegion(2, uniform(0, 1, 0))
+
+// Tapa inferior de la caixa: magnetitzada en -y
+bot_slab := seed_box.Intersect(Slab(0, 0, 2*box_hz).transl(0, 0, -box_hz))
+defRegion(3, bot_slab)
+m.setRegion(3, uniform(0, -1, 0))
+
+// ── Cilindre de pinning: r=2.5 nm, h=8 nm, eix tiltat 15 deg radial ─
+pin_r  := 2.5e-9
+pin_h  := 8e-9
+tilt   := 15.0 * pi / 180.0
+pin_ux := sin(tilt) / sqrt(2)   // component x del r_hat a 45 deg
+pin_uy := sin(tilt) / sqrt(2)   // component y del r_hat a 45 deg
+pin_uz := cos(tilt)
+
+pin_cyl := Cylinder(2*pin_r, pin_h).transl(seed_x, seed_y, 0)
+defRegion(4, pin_cyl)
+AnisU.setRegion(4, vector(pin_ux, pin_uy, pin_uz))
+
+// ── Guardar snapshot de la llavor ────────────────────────────────────
+saveas(m, "m_D7_Lz16nm_seed")
+print("Seed guardada: m_D7_Lz16nm_seed.ovf")
+print("  D  = 3.0 mJ/m^2  (D7)")
+print("  Lz = 16 nm")
+print("  seed centre = (", seed_x/1e-9, ",", seed_y/1e-9, ", 0) nm")
+print("  pin tilt    = 15 deg cap a r_hat")
+print("  NO s'ha fet relax ni minimize")

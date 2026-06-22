@@ -1,11 +1,11 @@
 // ============================================================
-//  setA-KLscan-uniaxial-min.mx3
-//  FeGe nanotube: joint scan over Lz and Ku (uniaxial, easy axis z)
+//  setA-KLscan-uniaxial-K3-min.mx3
+//  FeGe nanotube: Lz scan for Ku = 50 kJ/m^3 only (K3 case)
 //  No DMI, no external field
 //
 //  Lengths : Lz = 16, 32, 48, 64, 80, 96, 112, 128 nm  (8 values)
-//  Ku values: 0, 100, 200 kJ/m^3  (3 values)
-//  Total: 24 minimizations
+//  Ku = 50 kJ/m^3  (single value, iK=3)
+//  Total: 8 minimizations
 // ============================================================
 
 a     := 1e-9
@@ -28,39 +28,30 @@ Dbulk = 0.0
 B_ext = vector(0, 0, 0)
 
 AnisU = vector(0, 0, 1)
+Ku1   = 50e3
 
 tableAdd(Ku1)
 
 N_L := 8
-N_K := 3
+iK  := 3      // label consistent with the full scan
 
-for iK := 0; iK < N_K; iK++ {
+for iL := 0; iL < N_L; iL++ {
 
-    k_val := 0.0
-    if iK == 0 { k_val = 0.0   }
-    if iK == 1 { k_val = 100e3 }
-    if iK == 2 { k_val = 200e3 }
+    Lz_nm := 16 * (iL + 1)
+    Lz    := 1e-9 * Lz_nm
 
-    Ku1 = k_val
+    outer   := Cylinder(2*R_out, Lz)
+    inner   := Cylinder(2*R_in,  Lz)
+    annulus := outer.Sub(inner)
+    SetGeom(annulus)
 
-    for iL := 0; iL < N_L; iL++ {
+    m = randomMag()
+    minimize()
 
-        Lz_nm := 16 * (iL + 1)
-        Lz    := 1e-9 * Lz_nm
+    saveas(m, sprint("m_Ku", iK, "_Lz", Lz_nm, "nm"))
+    tablesave()
 
-        outer   := Cylinder(2*R_out, Lz)
-        inner   := Cylinder(2*R_in,  Lz)
-        annulus := outer.Sub(inner)
-        SetGeom(annulus)
-
-        m = randomMag()
-        minimize()  
-
-        saveas(m, sprint("m_Ku", iK, "_Lz", Lz_nm, "nm"))
-        tablesave()
-
-        print("Done  iK=", iK, "  Ku=", k_val/1e3, " kJ/m^3  Lz=", Lz_nm, " nm")
-    }
+    print("Done  iK=", iK, "  Ku=50 kJ/m^3  Lz=", Lz_nm, " nm")
 }
 
-print("=== KLscan uniaxial complete ===")
+print("=== K3 uniaxial scan complete ===")
