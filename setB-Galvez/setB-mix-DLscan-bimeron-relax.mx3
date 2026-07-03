@@ -1,0 +1,115 @@
+// ============================================================
+//  setB-mix-DLscan-bimeron-relax.mx3
+//  FeGe nanotube: bimeron stability, D vs Lz phase diagram
+//  Mixed geometry: previous tube (R_out=40nm, R_in=32nm, 1nm cell)
+//  Fixed Ku = 110 kJ/m^3 (Gálvez bimeron-stable value)
+//  Engineered bimeron seed (Section 2, Gálvez et al. 2023)
+//
+//  Follow-up run: relax() instead of minimize(), reduced D set
+//  Lz = 16, 32, 48, 64, 80, 96, 112, 128 nm  (8 values)
+//  D  = 1.0, 1.5, 2.0, 2.5, 3.0 mJ/m^2       (5 values)
+//  Total: 40 relaxations
+// ============================================================
+
+a     := 1e-9
+R_out := 40e-9
+R_in  := 32e-9
+
+Nx := 96
+Ny := 96
+Nz := 128
+
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+
+EdgeSmooth = 8
+
+Msat  = 0.384e6
+Aex   = 8.78e-12
+alpha = 0.5
+
+B_ext = vector(0, 0, 0)
+AnisU = vector(0, 0, 1)
+
+// Fixed anisotropy: Gálvez bimeron-stable value
+Ku1 = 110e3
+
+tableAdd(Dbulk)
+tableAdd(Ku1)
+
+// ---- Engineered seed parameters (Gálvez Section 2) ----
+seed_x := R_out / sqrt(2)
+seed_y := R_out / sqrt(2)
+
+box_hx := 10e-9
+box_hy := 10e-9
+box_hz := 15e-9
+
+pin_r  := 2.5e-9
+pin_h  := 8e-9
+
+tilt   := 15.0 * pi / 180.0
+pin_ux := sin(tilt) / sqrt(2)
+pin_uy := sin(tilt) / sqrt(2)
+pin_uz := cos(tilt)
+
+N_D := 5
+N_L := 8
+
+for iD := 0; iD < N_D; iD++ {
+
+    d_val := 0.0
+    if iD == 0 { d_val = 1.0e-3 }
+    if iD == 1 { d_val = 1.5e-3 }
+    if iD == 2 { d_val = 2.0e-3 }
+    if iD == 3 { d_val = 2.5e-3 }
+    if iD == 4 { d_val = 3.0e-3 }
+
+    Dbulk = d_val
+
+    for iL := 0; iL < N_L; iL++ {
+
+        Lz_nm := 16 * (iL + 1)
+        Lz    := 1e-9 * Lz_nm
+
+        // ----- Geometry -----
+        outer   := Cylinder(2*R_out, Lz)
+        inner   := Cylinder(2*R_in,  Lz)
+        annulus := outer.Sub(inner)
+        SetGeom(annulus)
+
+        // ----- Anisotropy regions -----
+        Ku1.SetRegion(0, 110e3)
+        AnisU.SetRegion(0, vector(0, 0, 1))
+
+        pinCyl := Cylinder(2*pin_r, pin_h).Transl(seed_x, seed_y, 0)
+        DefRegion(1, pinCyl)
+        Ku1.SetRegion(1, 110e3)
+        AnisU.SetRegion(1, vector(pin_ux, pin_uy, pin_uz))
+
+        // ----- Engineered initial magnetization -----
+        m = uniform(0, 0, 1)
+
+        m.SetInShape(
+            Cuboid(2*box_hx, 2*box_hy, 2*box_hz).Transl(seed_x, seed_y, 0),
+            Uniform(0, 0, -1))
+
+        m.SetInShape(
+            Cuboid(2*box_hx, 2*box_hy, box_hz).Transl(seed_x, seed_y, box_hz/2),
+            Uniform(0, 1, 0))
+
+        m.SetInShape(
+            Cuboid(2*box_hx, 2*box_hy, box_hz).Transl(seed_x, seed_y, -box_hz/2),
+            Uniform(0, -1, 0))
+
+        // ----- Relax (instead of minimize) -----
+        relax()
+
+        saveas(m, sprint("m_D", iD, "_Lz", Lz_nm, "nm_relax"))
+        tablesave()
+
+        print("Done  iD=", iD, "  D=", d_val*1e3, " mJ/m^2  Lz=", Lz_nm, " nm  [relax]")
+    }
+}
+
+print("=== setB-mix DLscan bimeron RELAX complete ===")

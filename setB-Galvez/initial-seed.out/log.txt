@@ -1,0 +1,72 @@
+//mumax 3.12 [linux_amd64 go1.22.4(gc) CUDA-12.6]
+//commit hash: 6e5c98bb
+//CPU info: AMD EPYC 9334 32-Core Processor, Cores: 32, MHz: 2700.000
+//GPU info: NVIDIA H100 PCIe(81109MB), CUDA Driver 12.6, cc=9.0, using cc=90 PTX
+//OS  info: Red Hat Enterprise Linux 8.9 (Ootpa), Hostname: gpu05
+//Timestamp: 2026-06-22 18:25:11
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: initial-seed.out/
+a := 1e-9
+R_out := 40e-9
+R_in := 32e-9
+Nx := 96
+Ny := 96
+Nz := 112
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+EdgeSmooth = 8
+Msat = 0.384e6
+Aex = 8.78e-12
+alpha = 0.5
+Dbulk = 3.0e-3
+Ku1 = 110e3
+AnisU = vector(0, 0, 1)
+B_ext = vector(0, 0, 0)
+Lz_nm := 112.0
+Lz := Lz_nm * a
+outer := Cylinder(2*R_out, Lz)
+inner := Cylinder(2*R_in, Lz)
+annulus := outer.Sub(inner)
+SetGeom(annulus)
+m = uniform(0, 0, 1)
+seed_x := R_out / sqrt(2)
+seed_y := R_out / sqrt(2)
+box_hx := 10e-9
+box_hy := 10e-9
+seed_rect := Rect(2*box_hx, 2*box_hy).transl(seed_x, seed_y, 0)
+defRegion(1, seed_rect)
+m.setRegion(1, uniform(0, 0, -1))
+top := seed_rect.Intersect(ZRange(0, Lz/2))
+defRegion(2, top)
+m.setRegion(2, uniform(0, 1, 0))
+bot := seed_rect.Intersect(ZRange(-Lz/2, 0))
+defRegion(3, bot)
+m.setRegion(3, uniform(0, -1, 0))
+pin_r := 2.5e-9
+pin_h := 8.0 * a
+tilt := 15.0 * pi / 180.0
+pin_ux := sin(tilt) / sqrt(2)
+pin_uy := sin(tilt) / sqrt(2)
+pin_uz := cos(tilt)
+pin_cyl := Cylinder(2*pin_r, pin_h).transl(seed_x, seed_y, 0)
+defRegion(4, pin_cyl)
+AnisU.setRegion(4, vector(pin_ux, pin_uy, pin_uz))
+saveas(m, "m_D7_Lz112nm_seed")
+print("Seed guardada: m_D7_Lz112nm_seed.ovf")
+//Seed guardada: m_D7_Lz112nm_seed.ovf
+print("D  = 3.0 mJ/m^2  (D7)")
+//D  = 3.0 mJ/m^2  (D7)
+print("Lz = 112 nm")
+//Lz = 112 nm
+print("NO s'ha fet relax ni minimize")
+//NO s'ha fet relax ni minimize
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).

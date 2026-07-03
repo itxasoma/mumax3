@@ -1,8 +1,8 @@
 // ============================================================
 //  comparison.mx3
-//  Compare relax() vs minimize() for one setA cubic+H case
-//  Case chosen: Lz = 64 nm, mu0 H = 0.2 T
-//  Geometry and material from setA-Cortes-Ortuno
+//  Compare relax() vs minimize() for two setA cubic+H cases
+//  Case 1: Lz = 32 nm, H = 0.0 T
+//  Case 2: Lz = 96 nm, H = 0.1 T
 // ============================================================
 
 a     := 1e-9
@@ -21,57 +21,80 @@ EdgeSmooth = 8
 Msat  = 0.384e6
 Aex   = 8.78e-12
 alpha = 0.5
-
 Dbulk = 0.0
 
-// setA cubic anisotropy
 Kc1 = -6e3
 Kc2 = 12e3
 
-// chosen comparison case
-Lz_nm := 64
-Lz    := 1e-9 * Lz_nm
-h_val := 0.2
+// energies to table
+tableAdd(E_total)
+tableAdd(E_exch)
+tableAdd(E_anis)
+tableAdd(E_demag)
+tableAdd(E_zeeman)
+
+// ══════════════════════════════════════════════════════════════
+//  CASE 1: Lz = 32 nm, H = 0.0 T
+// ══════════════════════════════════════════════════════════════
+Lz_nm := 32.0
+Lz    := Lz_nm * a
+h_val := 0.0
 B_ext = vector(0, 0, h_val)
 
-// geometry
 outer   := Cylinder(2*R_out, Lz)
 inner   := Cylinder(2*R_in,  Lz)
 annulus := outer.Sub(inner)
 SetGeom(annulus)
 
-// energies to table
-tableAdd(E_total)
-tableAdd(E_exch)
-tableAdd(E_DMI)
-tableAdd(E_anis)
-tableAdd(E_demag)
-
-// initial state
 m = randomMag()
-saveas(m, "m_init")
+saveas(m, "m_init_case1")
 
-print("=== CASE: cubic + H comparison ===")
-print("Lz = ", Lz_nm, " nm")
-print("mu0 H = ", h_val, " T")
-print("Kc1 = ", Kc1, " J/m^3")
-print("Kc2 = ", Kc2, " J/m^3")
+print("=== CASE 1: Lz=32nm  H=0.0T ===")
 
-// ---------- relax ----------
-print("=== RUN 1: relax() ===")
+print("--- RUN 1a: relax() ---")
 relax()
-saveas(m, "m_relax")
+saveas(m, "m_relax_case1")
 tablesave()
 
-// restore the exact same initial state
-m.LoadFile("m_init.ovf")
+m.LoadFile("comparison.out/m_init_case1.ovf")
 
-// ---------- minimize ----------
-print("=== RUN 2: minimize() ===")
+print("--- RUN 1b: minimize() ---")
 minimize()
-saveas(m, "m_minimize")
+saveas(m, "m_minimize_case1")
 tablesave()
 
-print("=== comparison complete ===")
-print("Row 1 in table.txt -> relax()")
-print("Row 2 in table.txt -> minimize()")
+print("=== CASE 1 complete. Rows 1-2 in table.txt ===")
+
+// ══════════════════════════════════════════════════════════════
+//  CASE 2: Lz = 96 nm, H = 0.1 T
+// ══════════════════════════════════════════════════════════════
+Lz_nm = 96.0
+Lz     = Lz_nm * a
+h_val  = 0.1
+B_ext = vector(0, 0, h_val)
+
+outer   = Cylinder(2*R_out, Lz)
+inner   = Cylinder(2*R_in,  Lz)
+annulus = outer.Sub(inner)
+SetGeom(annulus)
+
+m = randomMag()
+saveas(m, "m_init_case2")
+
+print("=== CASE 2: Lz=96nm  H=0.1T ===")
+
+print("--- RUN 2a: relax() ---")
+relax()
+saveas(m, "m_relax_case2")
+tablesave()
+
+m.LoadFile("comparison.out/m_init_case2.ovf")
+
+print("--- RUN 2b: minimize() ---")
+minimize()
+saveas(m, "m_minimize_case2")
+tablesave()
+
+print("=== CASE 2 complete. Rows 3-4 in table.txt ===")
+print("=== comparison.mx3 finished ===")
+print("Rows: 1=relax case1  2=minimize case1  3=relax case2  4=minimize case2")
