@@ -1,0 +1,124 @@
+// ============================================================
+//  setC-Yang.mx3
+//  FeGe/Co nanotube: bimeron seed (Galvez et al. 2023)
+//  Demagnetization ON/OFF comparison, following Yang et al. 2020
+//
+//  Fixed D = 3.0 mJ/m^2, two long tubes: Lz = 96 nm and 128 nm
+//  Run 0: EnableDemag = false  (no demag, original Msat)
+//  Run 1: EnableDemag = true, Msat = 580 kA/m (Yang et al. 2020 CoPt value)
+//  Total: 4 relaxations (2 demag cases x 2 tube lengths)
+// ============================================================
+
+a     := 1e-9
+R_out := 40e-9
+R_in  := 32e-9
+
+Nx := 96
+Ny := 96
+Nz := 128
+
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+
+EdgeSmooth = 8
+
+Aex   = 8.78e-12
+alpha = 0.5
+
+B_ext = vector(0, 0, 0)
+AnisU = vector(0, 0, 1)
+
+// Fixed anisotropy: Galvez bimeron-stable value
+Ku1 = 110e3
+
+Dval := 3.0e-3   // fixed, per tutor's suggestion
+
+tableAdd(Dbulk)
+tableAdd(Ku1)
+
+// ---- Engineered seed parameters (Galvez Section 2) ----
+seed_x := R_out / sqrt(2)
+seed_y := R_out / sqrt(2)
+
+box_hx := 10e-9
+box_hy := 10e-9
+box_hz := 15e-9
+
+pin_r  := 2.5e-9
+pin_h  := 8e-9
+
+tilt   := 15.0 * pi / 180.0
+pin_ux := sin(tilt) / sqrt(2)
+pin_uy := sin(tilt) / sqrt(2)
+pin_uz := cos(tilt)
+
+Dbulk = Dval
+
+N_demag := 2
+N_L     := 2
+
+for iDemag := 0; iDemag < N_demag; iDemag++ {
+
+    demag_tag := "off"
+
+    if iDemag == 0 {
+        EnableDemag = false
+        Msat        = 0.384e6   // original FeGe value, no demag
+        demag_tag   = "nodemag"
+    }
+    if iDemag == 1 {
+        EnableDemag = true
+        Msat        = 580e3     // Yang et al. 2020, CoPt interface
+        demag_tag   = "demag_Yang"
+    }
+
+    for iL := 0; iL < N_L; iL++ {
+
+        Lz_nm := 0
+
+        if iL == 0 { Lz_nm = 96 }
+        if iL == 1 { Lz_nm = 128 }
+
+        Lz := 1e-9 * Lz_nm
+
+        // ----- Geometry -----
+        outer   := Cylinder(2*R_out, Lz)
+        inner   := Cylinder(2*R_in,  Lz)
+        annulus := outer.Sub(inner)
+        SetGeom(annulus)
+
+        // ----- Anisotropy regions -----
+        Ku1.SetRegion(0, 110e3)
+        AnisU.SetRegion(0, vector(0, 0, 1))
+
+        pinCyl := Cylinder(2*pin_r, pin_h).Transl(seed_x, seed_y, 0)
+        DefRegion(1, pinCyl)
+        Ku1.SetRegion(1, 110e3)
+        AnisU.SetRegion(1, vector(pin_ux, pin_uy, pin_uz))
+
+        // ----- Engineered initial magnetization -----
+        m = uniform(0, 0, 1)
+
+        m.SetInShape(
+            Cuboid(2*box_hx, 2*box_hy, 2*box_hz).Transl(seed_x, seed_y, 0),
+            Uniform(0, 0, -1))
+
+        m.SetInShape(
+            Cuboid(2*box_hx, 2*box_hy, box_hz).Transl(seed_x, seed_y, box_hz/2),
+            Uniform(0, 1, 0))
+
+        m.SetInShape(
+            Cuboid(2*box_hx, 2*box_hy, box_hz).Transl(seed_x, seed_y, -box_hz/2),
+            Uniform(0, -1, 0))
+
+        // ----- Relax (dynamic LLG, not static minimize) -----
+        relax()
+
+        saveas(m, sprint("m_D3.0_Lz", Lz_nm, "nm_", demag_tag))
+        tablesave()
+
+        print("Done  D=3.0 mJ/m^2  Lz=", Lz_nm, " nm  demag=", demag_tag)
+    }
+}
+
+print("=== setC-Yang complete ===")

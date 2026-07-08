@@ -1,0 +1,107 @@
+//mumax 3.12 [linux_amd64 go1.22.4(gc) CUDA-12.6]
+//commit hash: 6e5c98bb
+//CPU info: AMD EPYC 9334 32-Core Processor, Cores: 32, MHz: 2700.000
+//GPU info: NVIDIA H100 PCIe(81109MB), CUDA Driver 12.6, cc=9.0, using cc=90 PTX
+//OS  info: Red Hat Enterprise Linux 8.9 (Ootpa), Hostname: gpu08
+//Timestamp: 2026-07-04 12:09:44
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: setC-Yang.out/
+//starting GUI at http://127.0.0.1:35367
+a := 1e-9
+R_out := 40e-9
+R_in := 32e-9
+Nx := 96
+Ny := 96
+Nz := 128
+SetGridsize(Nx, Ny, Nz)
+SetCellsize(a, a, a)
+EdgeSmooth = 8
+Aex = 8.78e-12
+alpha = 0.5
+B_ext = vector(0, 0, 0)
+AnisU = vector(0, 0, 1)
+Ku1 = 110e3
+Dval := 3.0e-3
+tableAdd(Dbulk)
+tableAdd(Ku1)
+seed_x := R_out / sqrt(2)
+seed_y := R_out / sqrt(2)
+box_hx := 10e-9
+box_hy := 10e-9
+box_hz := 15e-9
+pin_r := 2.5e-9
+pin_h := 8e-9
+tilt := 15.0 * pi / 180.0
+pin_ux := sin(tilt) / sqrt(2)
+pin_uy := sin(tilt) / sqrt(2)
+pin_uz := cos(tilt)
+Dbulk = Dval
+N_demag := 2
+N_L := 2
+for iDemag := 0; iDemag < N_demag; iDemag++ {
+	demag_tag := "off"
+	if iDemag == 0 {
+		EnableDemag = false
+		Msat = 0.384e6
+		demag_tag = "nodemag"
+	}
+	if iDemag == 1 {
+		EnableDemag = true
+		Msat = 580e3
+		demag_tag = "demag_Yang"
+	}
+	for iL := 0; iL < N_L; iL++ {
+		Lz_nm := 0
+		if iL == 0 {
+			Lz_nm = 96
+		}
+		if iL == 1 {
+			Lz_nm = 128
+		}
+		Lz := 1e-9 * Lz_nm
+		outer := Cylinder(2*R_out, Lz)
+		inner := Cylinder(2*R_in, Lz)
+		annulus := outer.Sub(inner)
+		SetGeom(annulus)
+		Ku1.SetRegion(0, 110e3)
+		AnisU.SetRegion(0, vector(0, 0, 1))
+		pinCyl := Cylinder(2*pin_r, pin_h).Transl(seed_x, seed_y, 0)
+		DefRegion(1, pinCyl)
+		Ku1.SetRegion(1, 110e3)
+		AnisU.SetRegion(1, vector(pin_ux, pin_uy, pin_uz))
+		m = uniform(0, 0, 1)
+		m.SetInShape(Cuboid(2*box_hx, 2*box_hy, 2*box_hz).Transl(seed_x, seed_y, 0), Uniform(0, 0, -1))
+		m.SetInShape(Cuboid(2*box_hx, 2*box_hy, box_hz).Transl(seed_x, seed_y, box_hz/2), Uniform(0, 1, 0))
+		m.SetInShape(Cuboid(2*box_hx, 2*box_hy, box_hz).Transl(seed_x, seed_y, -box_hz/2), Uniform(0, -1, 0))
+		relax()
+		saveas(m, sprint("m_D3.0_Lz", Lz_nm, "nm_", demag_tag))
+		tablesave()
+		print("Done  D=3.0 mJ/m^2  Lz=", Lz_nm, " nm  demag=", demag_tag)
+	}
+}
+// Initializing geometry 0 %
+// Initializing geometry 100 %
+//Done  D=3.0 mJ/m^2  Lz= 96  nm  demag= nodemag
+// Initializing geometry 0 %
+// Initializing geometry 100 %
+//Done  D=3.0 mJ/m^2  Lz= 128  nm  demag= nodemag
+// Initializing geometry 0 %
+// Initializing geometry 100 %
+// Calculating demag kernel 0 %
+// Calculating demag kernel 100 %
+//Done  D=3.0 mJ/m^2  Lz= 96  nm  demag= demag_Yang
+// Initializing geometry 0 %
+// Initializing geometry 100 %
+//Done  D=3.0 mJ/m^2  Lz= 128  nm  demag= demag_Yang
+print("=== setC-Yang complete ===")
+//=== setC-Yang complete ===
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
